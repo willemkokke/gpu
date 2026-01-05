@@ -1,0 +1,154 @@
+[project]
+name = "gpu-workspace"
+version = "0.0.0"
+description = "GPU access from Python - workspace root"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+dependencies = ["gpu-api", "gpu-dawn", "gpu-wgpu", "gpu-canvas", "gpu-wesl"]
+
+[tool.uv]
+managed = true
+
+[tool.uv.workspace]
+members = ["packages/*"]
+
+[tool.uv.sources]
+gpu-api = { workspace = true }
+gpu-dawn = { workspace = true }
+gpu-wgpu = { workspace = true }
+gpu-canvas = { workspace = true }
+gpu-wesl = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "basedpyright>=1.29",
+    "cibuildwheel>=2.22",
+    "duty>=1.0",
+    "pyodide-build[test]>=0.30.9; python_version >= '3.13'",
+    "pytest>=8.0",
+    "ruff>=0.14.10",
+]
+
+[tool.ruff]
+
+# Enable preview rules
+preview = true
+
+# Black is 88.
+line-length = 88
+indent-width = 4
+
+# Assume Python 3.11
+target-version = "py311"
+
+[tool.ruff.lint]
+# Enable Pyflakes (`F`) and a subset of the pycodestyle (`E`)  codes by default.
+# Unlike Flake8, Ruff doesn't enable pycodestyle warnings (`W`) or
+# McCabe complexity (`C901`) by default.
+select = [
+    "E4",
+    "E5",
+    "E7",
+    "E9",
+    "F",
+    "FAST",
+    "N",
+    "I",
+    "D",
+    "PT",
+    "UP",
+    "YTT",
+    "ANN",
+    "FBT",
+    "RUF022",
+]
+ignore = ["F722", "ANN002", "ANN003"]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings. Markdown,
+# reStructuredText code/literal blocks and doctests are all supported.
+#
+# This is currently disabled by default, but it is planned for this
+# to be opt-out in the future.
+docstring-code-format = true
+
+# Set the line length limit used when formatting code snippets in
+# docstrings.
+#
+# This only has an effect when the `docstring-code-format` setting is
+# enabled.
+docstring-code-line-length = "dynamic"
+
+[tool.ruff.lint.flake8-annotations]
+suppress-dummy-args = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# No need for docstrings in test files or __init__.py files.
+"test_*.py" = ["D"]
+"__init__.py" = ["D"]
+
+[tool.ruff.lint.isort]
+section-order = [
+    "future",
+    "typing",
+    "standard-library",
+    "third-party",
+    "qt",
+    "first-party",
+    "local-folder",
+    "testing",
+]
+
+[tool.ruff.lint.isort.sections]
+testing = ["pytest", "unittest", "mock", "pytestqt"]
+typing = ["typing", "typing_extensions"]
+qt = ["QT", "PySide6", "PyQt6", "shiboken6", "sip"]
+
+
+# Pyright/Pylance settings (used by VSCode)
+# Basedpyright also reads these settings
+[tool.basedpyright]
+typeCheckingMode = "recommended"
+reportAny = false                         # too much 3rd party code that uses Any
+reportExplicitAny = false                 # too useful an escape hatch
+reportUnusedCallResult = false            # too noisy, and not that useful
+reportMissingModuleSource = "none"        # native extensions are stubs only
+reportUnannotatedClassAttribute = false   # too noisy
+reportUnknownVariableType = false         # too noisy
+reportUnknownMemberType = false           # too noisy
+reportUnknownArgumentType = false         # too noisy
+reportUnsafeMultipleInheritance = false   # too noisy with mixins
+reportImplicitStringConcatenation = false # we use this pattern
+deprecateTypingAliases = true
+pythonPlatform = "All"
+pythonVersion = "3.11"
+# Only check our authored code
+include = [
+    "duties.py",
+    "packages/*/src",
+    "packages/*/tests",
+    "packages/*/scripts",
+]

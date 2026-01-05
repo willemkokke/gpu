@@ -1,3 +1,15 @@
+# macOS
+.DS_Store
+
+# Local tools (managed by activate scripts)
+.tools/
+
+# Act artifacts (local CI testing)
+.artifacts/
+
+# cibuildwheel output
+wheelhouse/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -136,13 +148,18 @@ celerybeat.pid
 
 # Environments
 .env
+.env.local
 .envrc
 .venv
+.venv-pyodide/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+
+# Pyodide build artifacts
+**/.pyodide_build/
 
 # Spyder project settings
 .spyderproject

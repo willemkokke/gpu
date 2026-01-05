@@ -1,0 +1,74 @@
+{
+    // make the editor format the file when saving
+    "editor.formatOnSave": true,
+    // format and organise import in python code
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        },
+    },
+    // format and organise import in jupyther notebooks
+    "notebook.formatOnSave.enabled": true,
+    "notebook.codeActionsOnSave": {
+        "notebook.source.fixAll": "explicit",
+        "notebook.source.organizeImports": "explicit"
+    },
+    // automatically format when pasting code if avaible
+    "editor.formatOnPaste": true,
+    // every file should have a single final newline, and no training whitespace
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "files.trimTrailingWhitespace": true,
+    // show a ruler indicating the maximum line length
+    "editor.rulers": [
+        {
+            "column": 88,
+            "color": "#8c768c"
+        },
+    ],
+    "files.exclude": {
+        "**/.tools": true,
+        "**/.cache": true,
+        "**/.tmp": true,
+        "**/.coverage": true,
+        "**/.mypy_cache": true,
+        "**/.pytest_cache": true,
+        "**/.ruff_cache": true,
+        "**/.venv*": true,
+        "**/htmlcov": true,
+        "**/site": true
+    },
+    "terminal.integrated.profiles.osx": {
+        "zsh (activated)": {
+            "path": "zsh",
+            "args": [
+                "-c",
+                "source activate.sh && exec zsh"
+            ]
+        }
+    },
+    "terminal.integrated.profiles.linux": {
+        "bash (activated)": {
+            "path": "bash",
+            "args": [
+                "--rcfile",
+                "activate.sh"
+            ]
+        }
+    },
+    "terminal.integrated.profiles.windows": {
+        "PowerShell (activated)": {
+            "source": "PowerShell",
+            "args": [
+                "-NoExit",
+                "-Command",
+                ". .\\activate.ps1"
+            ]
+        }
+    },
+    "terminal.integrated.defaultProfile.osx": "zsh (activated)",
+    "terminal.integrated.defaultProfile.linux": "bash (activated)",
+    "terminal.integrated.defaultProfile.windows": "PowerShell (activated)"
+}

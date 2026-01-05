@@ -1,0 +1,153 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  # Build pure Python packages (gpu-api, gpu-wesl, gpu-canvas)
+  build-pure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore tools cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.tools
+          key: tools-${{ runner.os }}-${{ hashFiles('.env.repo', 'activate.sh', 'scripts/**/*.sh') }}
+          restore-keys: |
+            tools-${{ runner.os }}-
+
+      - name: Activate environment
+        env:
+          TOOLS_FOLDER: ~/.tools
+        run: source activate.sh
+
+      - name: Save tools cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.tools
+          key: tools-${{ runner.os }}-${{ hashFiles('.env.repo', 'activate.sh', 'scripts/**/*.sh') }}
+
+      - name: Build pure Python packages
+        run: |
+          uv build packages/gpu-api
+          uv build packages/gpu-wesl
+          uv build packages/gpu-canvas
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-pure
+          path: dist/*.whl
+
+  # Build native extension packages (gpu-dawn, gpu-wgpu)
+  build-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore tools cache
+        id: cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.tools
+          key: tools-${{ runner.os }}-${{ hashFiles('.env.repo', 'activate.sh', 'scripts/**/*.sh') }}
+          restore-keys: |
+            tools-${{ runner.os }}-
+
+      - name: Activate environment
+        env:
+          TOOLS_FOLDER: ~/.tools
+        run: source activate.sh
+
+      - name: Save tools cache
+        if: steps.cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.tools
+          key: tools-${{ runner.os }}-${{ hashFiles('.env.repo', 'activate.sh', 'scripts/**/*.sh') }}
+
+      - name: Build native packages
+        run: |
+          uv build packages/gpu-dawn
+          uv build packages/gpu-wgpu
+
+      - name: Upload wheels
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheels-native
+          path: dist/*.whl
+
+  # Test pure Python packages
+  test-pure:
+    needs: build-pure
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore tools cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.tools
+          key: tools-${{ runner.os }}-${{ hashFiles('.env.repo', 'activate.sh', 'scripts/**/*.sh') }}
+
+      - name: Activate environment
+        env:
+          TOOLS_FOLDER: ~/.tools
+        run: source activate.sh
+
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-pure
+          path: dist
+
+      - name: Test gpu-api
+        run: uv run --python ${{ matrix.python-version }} --with dist/gpu_api*.whl --with pytest pytest packages/gpu-api/tests -v
+
+      - name: Test gpu-wesl
+        run: uv run --python ${{ matrix.python-version }} --with dist/gpu_wesl*.whl --with pytest pytest packages/gpu-wesl/tests -v
+
+      - name: Test gpu-canvas
+        run: uv run --python ${{ matrix.python-version }} --with dist/gpu_canvas*.whl --with pytest pytest packages/gpu-canvas/tests -v
+
+  # Test native extension packages
+  test-native:
+    needs: build-native
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore tools cache
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.tools
+          key: tools-${{ runner.os }}-${{ hashFiles('.env.repo', 'activate.sh', 'scripts/**/*.sh') }}
+
+      - name: Activate environment
+        env:
+          TOOLS_FOLDER: ~/.tools
+        run: source activate.sh
+
+      - name: Download wheels
+        uses: actions/download-artifact@v4
+        with:
+          name: wheels-native
+          path: dist
+
+      - name: Test gpu-dawn
+        run: uv run --python ${{ matrix.python-version }} --with dist/gpu_dawn*.whl --with pytest pytest packages/gpu-dawn/tests -v
+
+      - name: Test gpu-wgpu
+        run: uv run --python ${{ matrix.python-version }} --with dist/gpu_wgpu*.whl --with pytest pytest packages/gpu-wgpu/tests -v

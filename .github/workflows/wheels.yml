@@ -1,0 +1,286 @@
+name: Build wheels
+
+on:
+  push:
+    tags:
+      - "v*"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  # Build pure Python packages (gpu-api, gpu-wesl, gpu-canvas)
+  build_pure:
+    name: Build pure Python packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build gpu-api
+        run: pipx run build packages/gpu-api
+
+      - name: Build gpu-wesl
+        run: pipx run build packages/gpu-wesl
+
+      - name: Build gpu-canvas
+        run: pipx run build packages/gpu-canvas
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-pure
+          path: packages/*/dist/*.whl
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist-pure
+          path: packages/*/dist/*.tar.gz
+
+  # Build gpu-dawn native wheels (x64)
+  build_dawn_x64:
+    name: Build gpu-dawn on ${{ matrix.os }} (x64)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: packages/gpu-dawn
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_ARCHS_MACOS: x86_64
+          CIBW_ARCHS_WINDOWS: AMD64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-dawn-${{ matrix.os }}-x64
+          path: ./wheelhouse/*.whl
+
+  # Build gpu-dawn native wheels (ARM64) using native runners
+  build_dawn_arm64:
+    name: Build gpu-dawn on ${{ matrix.os }} (ARM64)
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-24.04-arm
+          - os: macos
+            runner: macos-latest
+          - os: windows
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: packages/gpu-dawn
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: aarch64
+          CIBW_ARCHS_MACOS: arm64
+          CIBW_ARCHS_WINDOWS: ARM64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-dawn-${{ matrix.os }}-arm64
+          path: ./wheelhouse/*.whl
+
+  # Build gpu-dawn Pyodide wheel
+  build_dawn_pyodide:
+    name: Build gpu-dawn Pyodide wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Pyodide wheel
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: packages/gpu-dawn
+          output-dir: wheelhouse
+        env:
+          CIBW_PLATFORM: pyodide
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-dawn-pyodide
+          path: ./wheelhouse/*.whl
+
+  # Build gpu-dawn source distribution
+  build_dawn_sdist:
+    name: Build gpu-dawn source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build sdist
+        run: pipx run build --sdist packages/gpu-dawn
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist-dawn
+          path: packages/gpu-dawn/dist/*.tar.gz
+
+  # Build gpu-wgpu native wheels (x64)
+  build_wgpu_x64:
+    name: Build gpu-wgpu on ${{ matrix.os }} (x64)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: packages/gpu-wgpu
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: x86_64
+          CIBW_ARCHS_MACOS: x86_64
+          CIBW_ARCHS_WINDOWS: AMD64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-wgpu-${{ matrix.os }}-x64
+          path: ./wheelhouse/*.whl
+
+  # Build gpu-wgpu native wheels (ARM64) using native runners
+  build_wgpu_arm64:
+    name: Build gpu-wgpu on ${{ matrix.os }} (ARM64)
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            runner: ubuntu-24.04-arm
+          - os: macos
+            runner: macos-latest
+          - os: windows
+            runner: windows-11-arm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: packages/gpu-wgpu
+          output-dir: wheelhouse
+        env:
+          CIBW_ARCHS_LINUX: aarch64
+          CIBW_ARCHS_MACOS: arm64
+          CIBW_ARCHS_WINDOWS: ARM64
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-wgpu-${{ matrix.os }}-arm64
+          path: ./wheelhouse/*.whl
+
+  # Build gpu-wgpu source distribution
+  build_wgpu_sdist:
+    name: Build gpu-wgpu source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build sdist
+        run: pipx run build --sdist packages/gpu-wgpu
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist-wgpu
+          path: packages/gpu-wgpu/dist/*.tar.gz
+
+  # Build gpu-pyodide wheel (Pyodide only)
+  build_pyodide:
+    name: Build gpu-pyodide wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Pyodide wheel
+        uses: pypa/cibuildwheel@v2.22
+        with:
+          package-dir: packages/gpu-pyodide
+          output-dir: wheelhouse
+        env:
+          CIBW_PLATFORM: pyodide
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: wheels-pyodide
+          path: ./wheelhouse/*.whl
+
+  # Build gpu-pyodide source distribution
+  build_pyodide_sdist:
+    name: Build gpu-pyodide source distribution
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build sdist
+        run: pipx run build --sdist packages/gpu-pyodide
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sdist-pyodide
+          path: packages/gpu-pyodide/dist/*.tar.gz
+
+  # Publish to PyPI
+  publish:
+    name: Publish to PyPI
+    needs: [build_pure, build_dawn_x64, build_dawn_arm64, build_dawn_sdist, build_wgpu_x64, build_wgpu_arm64, build_wgpu_sdist, build_pyodide_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: wheels-*
+          path: dist
+          merge-multiple: true
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sdist-*
+          path: dist
+          merge-multiple: true
+
+      # Exclude Pyodide wheels - PyPI doesn't support wasm32 yet (see PEP 783)
+      - name: Remove Pyodide wheels
+        run: rm -f dist/*pyodide*.whl dist/*wasm32*.whl dist/*emscripten*.whl
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
+
+  # Create GitHub Release with all artifacts
+  release:
+    name: Create GitHub Release
+    needs: [build_pure, build_dawn_x64, build_dawn_arm64, build_dawn_pyodide, build_dawn_sdist, build_wgpu_x64, build_wgpu_arm64, build_wgpu_sdist, build_pyodide, build_pyodide_sdist]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true

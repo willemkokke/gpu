@@ -1,0 +1,56 @@
+[project]
+name = "gpu-pyodide"
+version = "0.0.0"
+description = "Dawn WebGPU bindings for Pyodide/browser"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Willem Kokke", email = "mail@willem.net" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+wheel.packages = ["src/gpu"]
+cmake.build-type = "Release"
+
+[tool.scikit-build.cmake.define]
+BUILD_SHARED_LIBS = "OFF"
+
+[tool.cibuildwheel]
+# Pyodide only - no native builds
+build = ""
+
+[tool.cibuildwheel.pyodide]
+# Build for Pyodide (cp312 and cp313)
+build = "cp313-* cp312-*"
+
+# Use python -m pytest instead of pytest - script shims are broken in Pyodide venvs
+# See: https://github.com/pyodide/pyodide/issues/4802
+test-requires = "pytest"
+test-command = "python -m pytest {package}/tests -v"
+
+# Workaround: scikit-build-core <0.11.7 on macOS produces wrong platform tag
+# (macosx instead of emscripten). Fix by retagging the wheel after build.
+# See: https://github.com/scikit-build/scikit-build-core/issues/920
+# TODO: Remove these overrides when scikit-build-core>=0.11.7 is released
+
+# cp312 uses Pyodide 0.27.x which bundles emsdk 3.1.58
+[[tool.cibuildwheel.overrides]]
+select = "cp312-pyodide*"
+repair-wheel-command = [
+    "python -m wheel tags --remove --platform-tag emscripten_3_1_58_wasm32 {wheel}",
+    "python {package}/scripts/inject_stub.py $(dirname {wheel})/*emscripten*.whl",
+    "mv $(dirname {wheel})/*emscripten*.whl {dest_dir}/",
+]
+
+# cp313 uses Pyodide 0.29.x which bundles emsdk 4.0.9
+[[tool.cibuildwheel.overrides]]
+select = "cp313-pyodide*"
+repair-wheel-command = [
+    "python -m wheel tags --remove --platform-tag emscripten_4_0_9_wasm32 {wheel}",
+    "python {package}/scripts/inject_stub.py $(dirname {wheel})/*emscripten*.whl",
+    "mv $(dirname {wheel})/*emscripten*.whl {dest_dir}/",
+]
