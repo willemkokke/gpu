@@ -52,7 +52,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: packages/gpu-dawn
           output-dir: wheelhouse
@@ -84,7 +84,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: packages/gpu-dawn
           output-dir: wheelhouse
@@ -96,26 +96,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: wheels-dawn-${{ matrix.os }}-arm64
-          path: ./wheelhouse/*.whl
-
-  # Build gpu-dawn Pyodide wheel
-  build_dawn_pyodide:
-    name: Build gpu-dawn Pyodide wheel
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build Pyodide wheel
-        uses: pypa/cibuildwheel@v2.22
-        with:
-          package-dir: packages/gpu-dawn
-          output-dir: wheelhouse
-        env:
-          CIBW_PLATFORM: pyodide
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: wheels-dawn-pyodide
           path: ./wheelhouse/*.whl
 
   # Build gpu-dawn source distribution
@@ -151,7 +131,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: packages/gpu-wgpu
           output-dir: wheelhouse
@@ -183,7 +163,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.22
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: packages/gpu-wgpu
           output-dir: wheelhouse
@@ -220,7 +200,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build Pyodide wheel
-        uses: pypa/cibuildwheel@v2.22
+        uses: pypa/cibuildwheel@v3.3.1
         with:
           package-dir: packages/gpu-pyodide
           output-dir: wheelhouse
@@ -279,7 +259,7 @@ jobs:
   # Create GitHub Release with all artifacts
   release:
     name: Create GitHub Release
-    needs: [build_pure, build_dawn_x64, build_dawn_arm64, build_dawn_pyodide, build_dawn_sdist, build_wgpu_x64, build_wgpu_arm64, build_wgpu_sdist, build_pyodide, build_pyodide_sdist]
+    needs: [build_pure, build_dawn_x64, build_dawn_arm64, build_dawn_sdist, build_wgpu_x64, build_wgpu_arm64, build_wgpu_sdist, build_pyodide, build_pyodide_sdist]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     permissions:
