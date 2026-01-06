@@ -29,9 +29,6 @@ skip = "*-win32 *-manylinux_i686 *-musllinux_* cp310-win_arm64"
 # Enable free-threaded builds (3.13t, 3.14t)
 enable = ["cpython-freethreading"]
 
-# Use uv as the build frontend for faster builds
-build-frontend = "build[uv]"
-
 # Test the built wheels
 test-requires = "pytest"
 test-command = "pytest {package}/tests -v"

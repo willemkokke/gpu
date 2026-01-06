@@ -29,9 +29,6 @@ skip = "*-win32 *-manylinux_i686 *-musllinux_* cp310-win_arm64"
 # Enable free-threaded builds (3.13t, 3.14t)
 enable = ["cpython-freethreading"]
 
-# Use uv as the build frontend for faster builds
-build-frontend = "build[uv]"
-
 # Test the built wheels
 test-requires = "pytest"
 test-command = "pytest {package}/tests -v"
@@ -56,11 +53,6 @@ environment = { MACOSX_DEPLOYMENT_TARGET = "10.14" }
 archs = ["AMD64", "ARM64"]
 
 [tool.cibuildwheel.pyodide]
-# IMPORTANT: Build cp313 BEFORE cp312 (use CIBW_BUILD="cp313-*" then "cp312-*")
-# cp313/Pyodide 0.29.x can generate stubs; cp312/Pyodide 0.27.x cannot due to
-# filesystem isolation. cp312 reuses the stub that cp313 generates.
-build = "cp313-* cp312-*"
-
 # Use python -m pytest instead of pytest - script shims are broken in Pyodide venvs
 # See: https://github.com/pyodide/pyodide/issues/4802
 test-command = "python -m pytest {package}/tests -v"

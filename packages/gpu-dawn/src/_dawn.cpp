@@ -12,6 +12,6 @@ const char* get_backend_name() {
 
 NB_MODULE(_dawn, m) {
     m.doc() = "Dawn WebGPU bindings (dummy)";
-    m.def("add", &add, "Add two numbers", nb::arg("a"), nb::arg("b"));
-    m.def("get_backend_name", &get_backend_name, "Get backend name");
+    m.def("add", &add, "Add two numbers.", nb::arg("a"), nb::arg("b"));
+    m.def("get_backend_name", &get_backend_name, "Get backend name.");
 }
