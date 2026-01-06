@@ -20,16 +20,15 @@ cmake.build-type = "Release"
 BUILD_SHARED_LIBS = "OFF"
 
 [tool.cibuildwheel]
-# Pyodide only - no native builds
-build = ""
+# Pyodide only - build cp312 and cp313 for pyodide platform
+build = "cp312-pyodide* cp313-pyodide*"
+
+# Test the built wheels
+test-requires = "pytest"
 
 [tool.cibuildwheel.pyodide]
-# Build for Pyodide (cp312 and cp313)
-build = "cp313-* cp312-*"
-
 # Use python -m pytest instead of pytest - script shims are broken in Pyodide venvs
 # See: https://github.com/pyodide/pyodide/issues/4802
-test-requires = "pytest"
 test-command = "python -m pytest {package}/tests -v"
 
 # Workaround: scikit-build-core <0.11.7 on macOS produces wrong platform tag
@@ -40,17 +39,9 @@ test-command = "python -m pytest {package}/tests -v"
 # cp312 uses Pyodide 0.27.x which bundles emsdk 3.1.58
 [[tool.cibuildwheel.overrides]]
 select = "cp312-pyodide*"
-repair-wheel-command = [
-    "python -m wheel tags --remove --platform-tag emscripten_3_1_58_wasm32 {wheel}",
-    "python {package}/scripts/inject_stub.py $(dirname {wheel})/*emscripten*.whl",
-    "mv $(dirname {wheel})/*emscripten*.whl {dest_dir}/",
-]
+repair-wheel-command = "python -m wheel tags --remove --platform-tag emscripten_3_1_58_wasm32 {wheel} && python {package}/scripts/inject_stub.py $(dirname {wheel})/*emscripten*.whl && mv $(dirname {wheel})/*emscripten*.whl {dest_dir}/"
 
 # cp313 uses Pyodide 0.29.x which bundles emsdk 4.0.9
 [[tool.cibuildwheel.overrides]]
 select = "cp313-pyodide*"
-repair-wheel-command = [
-    "python -m wheel tags --remove --platform-tag emscripten_4_0_9_wasm32 {wheel}",
-    "python {package}/scripts/inject_stub.py $(dirname {wheel})/*emscripten*.whl",
-    "mv $(dirname {wheel})/*emscripten*.whl {dest_dir}/",
-]
+repair-wheel-command = "python -m wheel tags --remove --platform-tag emscripten_4_0_9_wasm32 {wheel} && python {package}/scripts/inject_stub.py $(dirname {wheel})/*emscripten*.whl && mv $(dirname {wheel})/*emscripten*.whl {dest_dir}/"

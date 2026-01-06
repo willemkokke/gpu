@@ -37,10 +37,16 @@ jobs:
   # Build gpu-dawn native wheels (x64)
   build_dawn_x64:
     name: Build gpu-dawn on ${{ matrix.os }} (x64)
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: linux
+            runner: ubuntu-latest
+          - os: macos
+            runner: macos-15-intel  # Intel x86_64
+          - os: windows
+            runner: windows-latest
 
     steps:
       - uses: actions/checkout@v4
@@ -130,10 +136,16 @@ jobs:
   # Build gpu-wgpu native wheels (x64)
   build_wgpu_x64:
     name: Build gpu-wgpu on ${{ matrix.os }} (x64)
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        include:
+          - os: linux
+            runner: ubuntu-latest
+          - os: macos
+            runner: macos-15-intel  # Intel x86_64
+          - os: windows
+            runner: windows-latest
 
     steps:
       - uses: actions/checkout@v4

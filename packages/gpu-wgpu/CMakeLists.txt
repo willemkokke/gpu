@@ -10,6 +10,7 @@ nanobind_add_module(_wgpu FREE_THREADED src/_wgpu.cpp)
 install(TARGETS _wgpu DESTINATION gpu/wgpu)
 
 # Generate stubs for type checking support
+# Skip for cross-compilation (Pyodide) - stubs generated separately via inject_stub.py
 if(NOT CMAKE_CROSSCOMPILING)
     # Delete any existing stub to ensure fresh generation
     file(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/src/gpu/wgpu/_wgpu.pyi)
