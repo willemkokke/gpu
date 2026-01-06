@@ -1,0 +1,58 @@
+[project]
+name = "gpu-dawn"
+version = "0.0.0"
+description = "Dawn WebGPU bindings for Python"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Willem Kokke", email = "mail@willem.net" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["scikit-build-core>=0.10", "nanobind>=2.0"]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build]
+wheel.packages = ["src/gpu"]
+cmake.build-type = "Release"
+
+[tool.scikit-build.cmake.define]
+BUILD_SHARED_LIBS = "OFF"
+
+[tool.cibuildwheel]
+# Build for Python 3.10-3.14 on native platforms, including free-threaded (3.13t, 3.14t)
+build = "cp310-* cp311-* cp312-* cp313-* cp313t-* cp314-* cp314t-*"
+
+# Skip 32-bit builds, musllinux, and Python 3.10 on Windows ARM64 (not available)
+skip = "*-win32 *-manylinux_i686 *-musllinux_* cp310-win_arm64"
+
+# Enable free-threaded builds (3.13t, 3.14t)
+enable = ["cpython-freethreading"]
+
+# Test the built wheels
+test-requires = "pytest"
+test-command = "pytest {package}/tests -v"
+
+[tool.cibuildwheel.linux]
+archs = ["x86_64", "aarch64"]
+manylinux-x86_64-image = "manylinux_2_28"
+manylinux-aarch64-image = "manylinux_2_28"
+repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
+
+[tool.cibuildwheel.macos]
+archs = ["x86_64", "arm64"]
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
+
+# macOS deployment targets per architecture
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_x86_64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
+
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_arm64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
+
+[tool.cibuildwheel.windows]
+archs = ["AMD64", "ARM64"]
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
