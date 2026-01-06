@@ -34,20 +34,25 @@ test-requires = "pytest"
 test-command = "pytest {package}/tests -v"
 
 [tool.cibuildwheel.linux]
-# Build for x86_64 and aarch64 (aarch64 via QEMU in CI)
 archs = ["x86_64", "aarch64"]
-
-# manylinux_2_28 = glibc 2.28+ (RHEL 8, Ubuntu 20.04+, Debian 10+)
-# Good balance of compatibility and modern toolchain (GCC 8+, C++17)
 manylinux-x86_64-image = "manylinux_2_28"
 manylinux-aarch64-image = "manylinux_2_28"
+repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
+repair-wheel-command = "delocate-wheel --require-archs {delocate_archs} -w {dest_dir} -v {wheel}"
 
-# macOS 10.14+ required for C++17 aligned allocation (used by nanobind)
-# arm64 requires macOS 11.0+ anyway
-environment = { MACOSX_DEPLOYMENT_TARGET = "10.14" }
+# macOS deployment targets per architecture
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_x86_64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "10.15" }
+
+[[tool.cibuildwheel.overrides]]
+select = "*-macosx_arm64"
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
 [tool.cibuildwheel.windows]
 archs = ["AMD64", "ARM64"]
+before-build = "pip install delvewheel"
+repair-wheel-command = "delvewheel repair -w {dest_dir} {wheel}"
