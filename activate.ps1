@@ -60,6 +60,12 @@ if ($actResult.Status -eq "failed") {
     Write-Host "  Error: Failed to setup act" -ForegroundColor Red
 }
 
+# Setup gh (GitHub CLI)
+$ghResult = . "$RepoDir/scripts/tools/gh.ps1"
+if ($ghResult.Status -eq "failed") {
+    Write-Host "  Error: Failed to setup gh" -ForegroundColor Red
+}
+
 Write-Host ""
 
 # Sync Python dependencies
@@ -68,5 +74,5 @@ uv sync
 Write-Host "Environment activated."
 
 # Cleanup internal variables and functions
-Remove-Variable RepoDir, uvResult, cmakeResult, ninjaResult, emsdkResult, actResult, HomeDir -ErrorAction SilentlyContinue
+Remove-Variable RepoDir, uvResult, cmakeResult, ninjaResult, emsdkResult, actResult, ghResult, HomeDir -ErrorAction SilentlyContinue
 Remove-Item Function:\Write-Tool

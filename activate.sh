@@ -63,6 +63,12 @@ if [[ "$SETUP_STATUS" == "failed" ]]; then
     echo "  Error: Failed to setup act" >&2
 fi
 
+# Setup gh (GitHub CLI)
+source "$REPO_DIR/scripts/tools/gh.sh"
+if [[ "$SETUP_STATUS" == "failed" ]]; then
+    echo "  Error: Failed to setup gh" >&2
+fi
+
 echo ""
 
 # Sync Python dependencies
